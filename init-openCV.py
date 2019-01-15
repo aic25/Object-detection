@@ -5,7 +5,9 @@ import cv2
 if __name__ == '__main__':
     # created a *threaded* video stream, allow the camera sensor to warmup,
     # and start the FPS counter
-    vs = WebcamVideoStream(src="inputs/test.mp4").start()
+    # vs = WebcamVideoStream(src="inputs/test.mp4").start()
+    vs = WebcamVideoStream(src="/notebooks/opencv-text-detection/video/001.mp4").start()
+	
     fps = FPS().start()
 
     while fps._numFrames < 100:

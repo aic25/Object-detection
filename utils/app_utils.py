@@ -39,7 +39,30 @@ class WebcamVideoStream:
     def __init__(self, src=0):
         # initialize the video camera stream and read the first frame
         # from the stream
-        self.stream = cv2.VideoCapture(src)
+        self.stream = cv2.VideoCapture(src + cv2.CAP_V4L2)
+
+        retval = self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        print('Set return: {}'.format(retval))
+        retval = self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        print('Set return: {}'.format(retval))
+        retval = self.stream.set(cv2.CAP_PROP_FPS, 30)
+        print('Set return: {}'.format(retval))
+        retval = self.stream.set(cv2.CAP_PROP_CONVERT_RGB, 1)
+        print('Set return: {}'.format(retval))
+        retval = self.stream.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        print('Set return: {}'.format(retval))
+
+        retval = self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)
+        print('Get return: {}'.format(retval))
+        retval = self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        print('Get return: {}'.format(retval))
+        retval = self.stream.get(cv2.CAP_PROP_FPS)
+        print('Get return: {}'.format(retval))
+        retval = self.stream.get(cv2.CAP_PROP_CONVERT_RGB)
+        print('Get return: {}'.format(retval))
+        retval = self.stream.get(cv2.CAP_PROP_AUTOFOCUS)
+        print('Get return: {}'.format(retval))
+
         (self.grabbed, self.frame) = self.stream.read()
         
         # initialize the variable used to indicate if the thread should

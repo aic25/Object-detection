@@ -5,12 +5,16 @@ import argparse
 import multiprocessing
 from multiprocessing import Queue, Pool
 import cv2
+import numpy as np
+import imutils.video as imv
+from datetime import datetime
 
 def realtime(args):
+    
     """
     Read and apply object detection to input real time stream (webcam)
     """
-    
+    t1 = datetime.now()
     # If display is off while no number of frames limit has been define: set diplay to on
     if((not args["display"]) & (args["num_frames"] < 0)):
         print("\nSet display to on\n")
@@ -28,6 +32,7 @@ def realtime(args):
     
     # created a threaded video stream and start the FPS counter
     vs = WebcamVideoStream(src=args["input_device"]).start()
+    # vs = imv.WebcamVideoStream(src=0+cv2.CAP_V4L2).start()
     fps = FPS().start()
 
     # Define the output codec and create VideoWriter object
@@ -49,10 +54,33 @@ def realtime(args):
     while True:
         # Capture frame-by-frame
         ret, frame = vs.read()
+        # frame = vs.read()
+
+        # Scale to improve speed
+        # res = cv2.resize(src=frame, dsize=(990,540), interpolation=cv2.INTER_AREA)
+
+        # heuristic, dont forget to remove
+        # frame = np.reshape(frame, (-1,1920,3))[:,:,:] 
+
         countFrame = countFrame + 1
+        """ input_q.put(frame)
+        # output_rgb = cv2.cvtColor(output_q.get(), cv2.COLOR_YUV2RGB_Y422)
+        output_rgb = output_q.get() """
+         
+        # write the frame
+        """         if args["output"]:
+            out.write(output_rgb)
+        # Display the resulting frame
+        if args["display"]:
+            cv2.imshow('frame', output_rgb)
+            fps.update()
+        elif countFrame >= args["num_frames"]:
+            break   """      
         if ret:
+            #input_q.put(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             input_q.put(frame)
-            output_rgb = cv2.cvtColor(output_q.get(), cv2.COLOR_RGB2BGR)
+            #output_rgb = cv2.cvtColor(output_q.get(), cv2.COLOR_BGR2RGB)
+            output_rgb = output_q.get()
             
             # write the frame
             if args["output"]:
@@ -60,19 +88,43 @@ def realtime(args):
         
             # Display the resulting frame
             if args["display"]:
+                cv2.putText(output_rgb,
+                "[INFO] FPS: {:.2f}".format(countFrame/(datetime.now()-t1).seconds), 
+                (5,25), 
+                cv2.FONT_HERSHEY_SIMPLEX, 
+                .5,
+                (0,255,0),
+                1)
+                cv2.putText(output_rgb,
+                "[INFO] Secs: {:.2f}".format((datetime.now()-t1).seconds), 
+                (5,50), 
+                cv2.FONT_HERSHEY_SIMPLEX, 
+                .5,
+                (0,255,0),
+                1)
+                cv2.putText(output_rgb,
+                "[INFO] Frames: {:.2f}".format(countFrame), 
+                (5,75), 
+                cv2.FONT_HERSHEY_SIMPLEX, 
+                .5,
+                (0,255,0),
+                1)
                 cv2.imshow('frame', output_rgb)
                 fps.update()
-            elif countFrame >= args["num_frames"]:
+            if countFrame >= args["num_frames"]:
                 break
                 
         else:
-            break
-        
+            break 
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # When everything done, release the capture
     fps.stop()
+    print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+    print("[INFO] Total displayed frame count: {}".format(countFrame))
     pool.terminate()
     vs.stop()
     if args["output"]:

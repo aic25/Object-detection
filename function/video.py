@@ -25,7 +25,7 @@ def video(args):
     pool = Pool(args["num_workers"], worker, (input_q,output_q))
     
     # created a threaded video stream and start the FPS counter
-    vs = cv2.VideoCapture("inputs/{}".format(args["input_videos"]))
+    vs = cv2.VideoCapture("{}".format(args["input_videos"]))
     fps = FPS().start()
 
     # Define the codec and create VideoWriter object
@@ -96,7 +96,11 @@ def video(args):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        print("Read frames: %-3i %% -- Write frame: %-3i %%" % (int(countReadFrame/nFrame * 100), int(countWriteFrame/nFrame * 100)), end ='\r')
+        try:
+            print("Read frames: %-3i %% -- Write frame: %-3i %%" % (int(countReadFrame/nFrame * 100), int(countWriteFrame/nFrame * 100)), end ='\r')
+        except:
+            pass
+        
         if((not ret) & input_q.empty() & output_q.empty() & output_pq.empty()):
             break
 
@@ -105,6 +109,8 @@ def video(args):
     
     # When everything done, release the capture
     fps.stop()
+    print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
     pool.terminate()
     vs.release()
     if args["output"]:

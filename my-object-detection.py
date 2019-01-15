@@ -10,7 +10,7 @@ if __name__ == '__main__':
     
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-n", "--num-frames", type=int, default=0,
+    ap.add_argument("-n", "--num-frames", type=int, default=float('Inf'),
 	            help="# of frames to loop over for FPS test")
     ap.add_argument("-d", "--display", type=int, default=0,
 	            help="Whether or not frames should be displayed")
@@ -22,6 +22,12 @@ if __name__ == '__main__':
 	            help="Device number input")
     ap.add_argument("-i", "--input-videos", type=str, default="",
 	            help="Path to videos input, overwrite device input if used")
+    ap.add_argument("-s", "--scale", type=float, default=1.0, 
+                help="Scale input frame")
+    ap.add_argument("-dev", "--device-count", type=int, default=5,
+                help="# of CPUs per worker.")
+    ap.add_argument("-gm", "--gpu-memory-fraction", type=float, default=1.0,
+                help="GPU memory percentage per tensorflow session")
     ap.add_argument('-w', '--num-workers', dest='num_workers', type=int,
                         default=2, help='Number of workers.')
     ap.add_argument('-q-size', '--queue-size', dest='queue_size', type=int,
@@ -29,7 +35,7 @@ if __name__ == '__main__':
     ap.add_argument('-l', '--logger-debug', dest='logger_debug', type=int,
                         default=0, help='Print logger debug')
     args = vars(ap.parse_args())
-
+    
     # Use realtime function if no video has been provided
     if args['input_videos'] == "":
         realtime(args)
