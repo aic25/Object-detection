@@ -15,6 +15,7 @@ def realtime(args):
     Read and apply object detection to input real time stream (webcam)
     """
     t1 = datetime.now()
+
     # If display is off while no number of frames limit has been define: set diplay to on
     if((not args["display"]) & (args["num_frames"] < 0)):
         print("\nSet display to on\n")
@@ -29,7 +30,7 @@ def realtime(args):
     input_q = Queue(maxsize=args["queue_size"])
     output_q = Queue(maxsize=args["queue_size"])
     pool = Pool(args["num_workers"], worker, (input_q,output_q))
-    
+
     # created a threaded video stream and start the FPS counter
     vs = WebcamVideoStream(src=args["input_device"]).start()
     # vs = imv.WebcamVideoStream(src=0+cv2.CAP_V4L2).start()
@@ -49,7 +50,7 @@ def realtime(args):
         print("Starting video acquisition. Press 'q' (on the video windows) to stop.")
         print("=====================================================================")
         print()
-        
+
     countFrame = 0
     while True:
         # Capture frame-by-frame
@@ -79,13 +80,16 @@ def realtime(args):
         if ret:
             #input_q.put(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             input_q.put(frame)
+
             #output_rgb = cv2.cvtColor(output_q.get(), cv2.COLOR_BGR2RGB)
-            output_rgb = output_q.get()
-            
+            #output_rgb = output_q.get()
+
+            output_rgb = cv2.cvtColor(output_q.get(), cv2.COLOR_RGB2BGR)
+
             # write the frame
             if args["output"]:
                 out.write(output_rgb)
-        
+
             # Display the resulting frame
             if args["display"]:
                 cv2.putText(output_rgb,
@@ -109,13 +113,19 @@ def realtime(args):
                 .5,
                 (0,255,0),
                 1)
-                cv2.imshow('frame', output_rgb)
+
+                ## full screen
+                if args["full_screen"]:
+                    cv2.namedWindow("frame", cv2.WND_PROP_FULLSCREEN)
+                    cv2.setWindowProperty("frame",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+                cv2.imshow("frame", output_rgb)
+
                 fps.update()
             if countFrame >= args["num_frames"]:
                 break
-                
+
         else:
-            break 
+            break
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -130,4 +140,4 @@ def realtime(args):
     if args["output"]:
         out.release()
     cv2.destroyAllWindows()
-    
+
